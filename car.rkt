@@ -2,6 +2,9 @@
 (require 2htdp/image)
 (require 2htdp/universe)
 
+;; WorldState
+;; (list Position Velocity)
+
 (define HEIGHT-OF-WORLD 100)
 (define WIDTH-OF-WORLD 200)
 
@@ -35,23 +38,27 @@
 ; the left margin of the BACKGROUND image
 (define (render x)
   (place-image CAR
-               x
+               (car x)
                (- HEIGHT-OF-WORLD
                   GROUND-LEVEL)
                BACKGROUND))
 
 ; WorldState -> WorldState
 ; adds 3 to x to move the car right
-(define (tock x)
-  (add1 x))
+(define (tock ws)
+  (list (+ (car ws) (cadr ws))
+        (cadr ws)))
 
 ; WorldState -> KeyPress -> WorldState
 ; stops when any key is pressed
-(define (stop ws ke) WIDTH-OF-WORLD)
+(define (change-speed ws ke)
+  (cond [(string=? ke "up") (list (car ws) (add1 (cadr ws)))]
+        [(string=? ke  "down") (list (car ws) (sub1 (cadr ws)))]
+        [true ws]))
 
 ; WorldState -> WorldState
 ; checks if the world should end
-(define (end ws) (= ws (- WIDTH-OF-WORLD (/ (image-width CAR) 2))))
+(define (end ws) (> (car ws) (- WIDTH-OF-WORLD (/ (image-width CAR) 2))))
 
 ; WorldState -> WorldState
 ; launches the program from some initial state
@@ -59,7 +66,7 @@
   (big-bang ws
             [on-tick tock]
             [to-draw render]
-            [on-key stop]
+            [on-key change-speed]
             [stop-when end]))
 
-(main 0)
+(main (list 0 1))
