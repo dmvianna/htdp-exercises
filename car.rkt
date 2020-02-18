@@ -3,7 +3,8 @@
 (require 2htdp/universe)
 
 ;; WorldState
-;; (list Position Velocity)
+(define-struct ws (position velocity))
+
 (define WHEEL-RADIUS 10)
 (define HEIGHT-OF-WORLD (* 5 WHEEL-RADIUS))
 (define WIDTH-OF-WORLD (* 50 WHEEL-RADIUS))
@@ -27,41 +28,37 @@
 (define GROUND-LEVEL (/ (image-height CAR) 2))
 (define BACKGROUND (empty-scene WIDTH-OF-WORLD HEIGHT-OF-WORLD))
 
-; A WorldState is a Number.
-; interretation the number of pixels between
-; the left border of the scene and the car
-
 ; WorldState -> Image
 ; places the image of the car x pixels from
 ; the left margin of the BACKGROUND image
 (define (render x)
   (place-image CAR
-               (car x)
+               (ws-position x)
                (- HEIGHT-OF-WORLD
                   GROUND-LEVEL)
                BACKGROUND))
-(check-expect (render (list 20 2))
+(check-expect (render (make-ws 20 2))
               (place-image CAR 20 (- HEIGHT-OF-WORLD GROUND-LEVEL) BACKGROUND))
 
 ; WorldState -> WorldState
 ; adds 3 to x to move the car right
 (define (tock ws)
-  (list (+ (car ws) (cadr ws))
-        (cadr ws)))
-(check-expect (tock (list 1 1)) (list 2 1))
-(check-expect (tock (list 1 2)) (list 3 2))
+  (make-ws (+ (ws-position ws) (ws-velocity ws))
+        (ws-velocity ws)))
+(check-expect (tock (make-ws 1 1)) (make-ws 2 1))
+(check-expect (tock (make-ws 1 2)) (make-ws 3 2))
 
 
 ; WorldState -> KeyPress -> WorldState
 ; stops when any key is pressed
 (define (change-speed ws ke)
-  (cond [(string=? ke "up") (list (car ws) (add1 (cadr ws)))]
-        [(string=? ke  "down") (list (car ws) (sub1 (cadr ws)))]
+  (cond [(string=? ke "up") (make-ws (ws-position ws) (add1 (ws-velocity ws)))]
+        [(string=? ke  "down") (make-ws (ws-position ws) (sub1 (ws-velocity ws)))]
         [true ws]))
 
 ; WorldState -> WorldState
 ; checks if the world should end
-(define (end ws) (> (car ws) (- WIDTH-OF-WORLD (/ (image-width CAR) 2))))
+(define (end ws) (> (ws-position ws) (- WIDTH-OF-WORLD (/ (image-width CAR) 2))))
 
 ; WorldState Number Number String -> WorldState
 ; places the car at x-mouse
@@ -72,12 +69,12 @@
 ; wanted: 10
 (define (hyper ws x-mouse y-mouse me)
   (cond
-    [(string=? "button-down" me) (list x-mouse (cadr ws))]
+    [(string=? "button-down" me) (make-ws x-mouse (ws-velocity ws))]
     [else ws]))
-(check-expect (hyper (list 20 1) 10 10 "button-down")
-              (list 10 1))
-(check-expect (hyper (list 20 1) 10 10 "enter")
-              (list 20 1))
+(check-expect (hyper (make-ws 20 1) 10 10 "button-down")
+              (make-ws 10 1))
+(check-expect (hyper (make-ws 20 1) 10 10 "enter")
+              (make-ws 20 1))
 
 ; WorldState -> WorldState
 ; launches the program from some initial state
@@ -89,5 +86,6 @@
             [on-mouse hyper]
             [stop-when end]))
 
-(main (list 0 1))
+(main (make-ws 0 1))
+
 
