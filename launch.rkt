@@ -43,7 +43,7 @@
                   10 (* 3/4 WIDTH)
                   (place-rocket HEIGHT))]
     [(>= x 0)
-     (place-rocket x)]))
+     (place-rocket (- HEIGHT x))]))
 
 (check-expect
  (show "resting")
@@ -67,10 +67,53 @@
 ; starts the countdown when space bar is pressed,
 ; if the rocket is still resting
 (define (launch x ke)
-  x)
+  (cond
+    [(string? x) (if (string=? " " ke) -3 x)]
+    [(<= -3 x -1) x]
+    [(>= x 0) x]))
+(check-expect (launch "resting" " ") -3)
+(check-expect (launch "resting" "a") "resting")
+(check-expect (launch -3 " ") -3)
+(check-expect (launch -1 " ") -1)
+(check-expect (launch 33 " ") 33)
+(check-expect (launch 33 "a") 33)
 
 ; LRCD -> LRCD
 ; raises the rocket by YDELTA,
 ; if it is moving already
+
+(check-expect (fly "resting") "resting")
+(check-expect (fly -3) -2)
+(check-expect (fly -2) -1)
+(check-expect (fly -1) 0)
+(check-expect (fly 10) (+ 10 YDELTA))
+(check-expect (fly 22) (+ 22 YDELTA))
+
 (define (fly x)
-  x)
+  (cond
+    [(string? x) x]
+    [(<= -3 x -1) (if (= x -1) 0 (+ x 1))]
+    [(>= x 0) (+ x YDELTA)]))
+
+; LRCD -> LRCD
+(define (main1 s)
+  (big-bang s
+            [to-draw show]
+            [on-key launch]))
+; (main1 "resting")
+
+; LRCD -> Boolean
+; stops the animation when state
+; is equal to YDELTA
+(define (finished s)
+  (and (number? s) (= s HEIGHT)))
+
+; LRCD -> LRCD
+(define (main2 s)
+  (big-bang s
+            [to-draw show]
+            [on-key launch]
+            [on-tick fly 1/25]
+            [stop-when finished show]))
+(main2 "resting")
+
