@@ -114,6 +114,7 @@
             [to-draw show]
             [on-key launch]
             [on-tick fly 1/25]
-            [stop-when finished show]))
+            [stop-when finished show]
+            [close-on-stop #true]))
 (main2 "resting")
 
