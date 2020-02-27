@@ -3,12 +3,18 @@
 (require 2htdp/universe)
 
 (define DIAMETER 10)
-(define MTSCN (empty-scene 90 30 "black"))
+(define LENGTH 90)
+(define WIDTH 30)
+(define MTSCN (empty-scene LENGTH WIDTH "black"))
+(define RED 0)
+(define GREEN 1)
+(define YELLOW 2)
 
 ; An N-TrafficLight is one of:
-; - 0 interpretation the traffic light shows red
-; - 1 interpretation the traffic light shows green
-; - 2 interpretation the traffic light shows yellow
+; - RED
+; - GREEN
+; - YELLOW
+
 
 ; TrafficLight -> Image
 ; for each colour it will render a three light
@@ -16,47 +22,36 @@
 ; in solid, and the others in outline
 (define (tl-render cs)
   (place-image
-   (beside (circle DIAMETER (if (string=? "red" cs) "solid" "outline") "red")
+   (beside (circle DIAMETER (if (equal? RED cs) "solid" "outline") "red")
            (square DIAMETER "solid" "black")
-           (circle DIAMETER (if (string=? "yellow" cs) "solid" "outline") "yellow")
+           (circle DIAMETER (if (equal? YELLOW cs) "solid" "outline") "yellow")
            (square DIAMETER "solid" "black")
-           (circle DIAMETER (if (string=? "green" cs) "solid" "outline") "green"))
-   45 15 MTSCN))
+           (circle DIAMETER (if (equal? GREEN cs) "solid" "outline") "green"))
+   (/ LENGTH 2) (/ WIDTH 2) MTSCN))
 (check-expect
- (tl-render "red")
+ (tl-render RED)
  (place-image 
   (beside (circle DIAMETER "solid" "red")
           (square DIAMETER "solid" "black")
           (circle DIAMETER "outline" "yellow")
           (square DIAMETER "solid" "black")                       
           (circle DIAMETER "outline" "green"))
-  45 15 MTSCN))
+  (/ LENGTH 2)(/ WIDTH 2)  MTSCN))
 
 
 ; TrafficLight -> TrafficLight
 ; yields the next state, given current state cs
 ; TrafficLight colour -> TrafficLight colour
 ; yields the next state given current state s
-(check-expect (traffic-light-next "red") "green")
-(check-expect (traffic-light-next "green") "yellow")
-(check-expect (traffic-light-next "yellow") "red")
-(define (tl-next s)
+(check-expect (tl-next RED) GREEN)
+(check-expect (tl-next GREEN) YELLOW)
+(check-expect (tl-next YELLOW) RED)
+(define (tl-next cs)
   (cond
-    [(string=? "red" s) "green"]
-    [(string=? "yellow" s) "red"]
-    [(string=? "green" s) "yellow"])
-  )
+    [(equal? cs RED) GREEN]
+    [(equal? cs GREEN) YELLOW]
+    [(equal? cs YELLOW) RED]))
 
-
-;; (define (tl-next cs)
-;;   (cond
-;;     [(= 0 (remainder cs 3)) "red"]
-;;     [(= 1 (remainder cs 3)) "yellow"]
-;;     [(= 2 (remainder cs 3)) "green"]))
-;; (check-expect (tl-next 0) "red")
-;; (check-expect (tl-next 1) "yellow")
-;; (check-expect (tl-next 2) "green")
-;; (check-expect (tl-next 3) "red")
 
 ; TrafficLight -> TrafficLight
 ; simulates a clock-based American traffic light
@@ -64,4 +59,5 @@
   (big-bang initial-state
             [to-draw tl-render]
             [on-tick tl-next 1]))
-(traffic-light-simulation "red")
+
+(traffic-light-simulation 0)
