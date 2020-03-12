@@ -44,27 +44,17 @@
 (define (edit ed ke)
   (cond
     [(and (string=? ke "\b") (chars? ed))
-     (make-editor (substring (editor-pre ed)
-                             0
-                             (sub1 (string-length (editor-pre ed))))
+     (make-editor (string-remove-last (editor-pre ed))
                   (editor-post ed))]
     [(string=? ke "\b") ed]
     [(and (string=? ke "left") (chars? ed))
-     (make-editor (substring (editor-pre ed)
-                             0
-                             (sub1 (string-length (editor-pre ed))))
-                  (string-append (string-ith
-                                  (editor-pre ed)
-                                  (sub1 (string-length (editor-pre ed))))
+     (make-editor (string-remove-last (editor-pre ed))
+                  (string-append (string-last (editor-pre ed))
                                  (editor-post ed)))]
     [(and (string=? ke "right") (not (string=? "" (editor-post ed))))
      (make-editor (string-append (editor-pre ed)
-                                 (string-ith (editor-post ed) 0))
-                  (substring (editor-post ed)
-                             1
-                             (if (= 1 (string-length (editor-post ed)))
-                                 1
-                                 (sub1 (string-length (editor-post ed))))))]
+                                 (string-first (editor-post ed)))
+                  (string-rest (editor-post ed)))]
     [(and (not (string=? " " ke)) (string-whitespace? ke))
      ed]
     [(= 1 (string-length ke))
@@ -106,3 +96,55 @@
               #true)
 (check-expect (chars? (make-editor "" "a"))
               #false)
+
+; String -> String
+;  (string-first "a")
+; interpretation returns the first
+; 1String from a string
+(define (string-first s)
+  (if (< 0 (string-length s))
+      (string-ith s 0)
+      s))
+(check-expect (string-first "abc") "a")
+(check-expect (string-first "") "")
+
+; String -> String
+;  (string-rest "abc")
+; interpretation returns the cdr
+; of a string
+(define (string-rest s)
+  (cond
+    [(< 1 (string-length s))
+     (substring s 1 (string-length s))]
+    [(= 1 (string-length s))
+     ""]
+    [else s]))
+(check-expect (string-rest "abc") "bc")
+(check-expect (string-rest "a") "")
+(check-expect (string-rest "ab") "b")
+
+; String -> String
+;  (string-last "abc")
+; interpretation returns the
+; last 1String from a string
+(define (string-last s)
+  (if
+   (<= 1 (string-length s))
+   (string-ith s (sub1 (string-length s)))
+   s))
+(check-expect (string-last "abc") "c")
+(check-expect (string-last "a") "a")
+(check-expect (string-last "") "")
+
+; String -> String
+;  (string-remove-last "abc")
+; interpretation returns the
+; string without the last 1String
+(define (string-remove-last s)
+  (if
+   (< 0 (string-length s))
+   (substring s 0 (sub1 (string-length s)))
+   s))
+(check-expect (string-remove-last "abc") "ab")
+(check-expect (string-remove-last "a") "")
+(check-expect (string-remove-last "") "")
