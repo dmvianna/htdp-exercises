@@ -26,8 +26,8 @@
     (text (editor-post ed) 20 "black"))
    2 (/ HEIGHT 2) "left" "center" SCN))
 
-(render (make-editor "this" " word"))
-(render (make-editor "a" " b"))
+;; (render (make-editor "this" " word"))
+;; (render (make-editor "a" " b"))
 
 ; Editor KeyEvent -> Editor
 ;  (edit (make-editor "a" "b") "\b")
@@ -148,3 +148,12 @@
 (check-expect (string-remove-last "abc") "ab")
 (check-expect (string-remove-last "a") "")
 (check-expect (string-remove-last "") "")
+
+; Editor -> Editor
+; runs the editor
+(define (run ed)
+  (big-bang ed
+            [to-draw render]
+            [on-key edit]))
+
+(run (make-editor "" ""))
