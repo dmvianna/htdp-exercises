@@ -15,15 +15,24 @@
 (define CURSOR (rectangle 1  HEIGHT "solid" "red"))
 
 ; Editor -> Image
+;  (pre-render (edit (make-editor "a" "b") "c"))
+; interpretation pre-render the text that would be
+; added to the canvas before the fact, so we can
+; measure its width or insert it into the canvas.
+(define (pre-render ed)
+  (beside
+   (text (editor-pre ed) HEIGHT "black")
+   CURSOR
+   (text (editor-post ed) HEIGHT "black"))
+  )
+
+; Editor -> Image
 ;  (render (make-editor "a" "b")
 ; interpretation render draws an editor
 ; window on a canvas
 (define (render ed)
   (place-image/align
-   (beside
-    (text (editor-pre ed) 20 "black")
-    CURSOR
-    (text (editor-post ed) 20 "black"))
+   (pre-render ed)
    2 (/ HEIGHT 2) "left" "center" SCN))
 
 ;; (render (make-editor "this" " word"))
@@ -47,6 +56,7 @@
      (make-editor (string-remove-last (editor-pre ed))
                   (editor-post ed))]
     [(string=? ke "\b") ed]
+    [(> (image-width (pre-render ed)) (- WIDTH HEIGHT)) ed]
     [(and (string=? ke "left") (chars? ed))
      (make-editor (string-remove-last (editor-pre ed))
                   (string-append (string-last (editor-pre ed))
