@@ -15,7 +15,7 @@
 (define CURSOR (rectangle 1  HEIGHT "solid" "red"))
 
 ; Editor -> Image
-;  (pre-render (edit (make-editor "a" "b") "c"))
+;  (pre-render (make-editor "a" "b")))
 ; interpretation pre-render the text that would be
 ; added to the canvas before the fact, so we can
 ; measure its width or insert it into the canvas.

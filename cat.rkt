@@ -7,6 +7,7 @@
 
 ; The cat is represented by a brown circle
 (define cat1 (circle SCALE "solid" "brown"))
+(define cat2 (circle SCALE "solid" "black"))
 
 ; WorldState
 ; The world state is a struct with velocity and position
@@ -26,7 +27,7 @@
 ; when the cat disappears to the right, it
 ; reappears on the left and vice-versa
 (define (render x)
-  (place-image cat1
+  (place-image (if (odd? (ws-position x)) cat1 cat2)
                (ws-position x)
                (- HEIGHT-OF-WORLD
                   GROUND-LEVEL)
