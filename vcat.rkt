@@ -48,16 +48,16 @@
                            BACKGROUND))
 
 ; the animal loses happiness -0.1 each tick
-(define (leak happy)
+(define (leak-gauge happy)
   (max 0 (- happy 0.1)))
 
-(define (interact happy ke)
+(define (interact-gauge happy ke)
   (cond
     [(string=? ke "down") (min MAX-SCORE (+ happy (/ happy 5)))]
     [(string=? ke "up") (min MAX-SCORE (+ happy (/ happy 3)))]
     [else happy]))
 
-(define (sad happy)
+(define (sad-gauge happy)
   (= 0 happy))
 
 
@@ -124,11 +124,14 @@
 
 (define (droopy x)
   (make-vcat (droopy-catmove (vcat-position x))
-             (vcat-gauge x)))
+             (leak-gauge (vcat-gauge x))))
 
-(define (change-speed x ke)
+(define (interact x ke)
   (make-vcat (change-speed-catmove (vcat-position x) ke)
-             (vcat-gauge x)))
+             (interact-gauge (vcat-gauge x) ke)))
+
+(define (sad x)
+  (sad-gauge (vcat-gauge x)))
 
 ; CatMove -> CatMove
 ; launches the program from some initial state
@@ -136,7 +139,9 @@
   (big-bang cat-move
             [on-tick droopy]
             [to-draw render]
-            [on-key change-speed]
+            [on-key interact]
+            [stop-when sad]
+            [close-on-stop #true]
             ))
 
 (main (make-vcat (make-cat-move 0 1) 10))
